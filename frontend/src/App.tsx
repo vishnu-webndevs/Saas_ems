@@ -33,6 +33,12 @@ function AppContent() {
   const { login, logout, setAuthChecked } = useAuthStore();
 
   useEffect(() => {
+    if (window.location.protocol !== 'file:') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth-storage');
+    }
+
     const now = Date.now();
     const lastUsedRaw = localStorage.getItem(AUTH_LAST_USED_KEY);
     const lastUsed = lastUsedRaw ? Number(lastUsedRaw) : NaN;

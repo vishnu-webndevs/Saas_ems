@@ -24,7 +24,11 @@ export const authAPI = {
     
     // Store token if provided (essential for Electron/Mobile)
     if (token) {
-      localStorage.setItem('token', token);
+      if (window.location.protocol === 'file:') {
+        localStorage.setItem('token', token);
+      } else {
+        localStorage.removeItem('token');
+      }
     } else {
       // Fallback/Warning for debugging
       if (window.location.protocol === 'file:') {
