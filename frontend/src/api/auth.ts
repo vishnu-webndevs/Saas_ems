@@ -19,7 +19,10 @@ export interface RegisterData {
 
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<{ user: User }> => {
-    const response = await api.post('/login', credentials);
+    const response = await api.post('/login', {
+      ...credentials,
+      email: credentials.email.trim(),
+    });
     const { user, token } = response.data;
     
     // Store token if provided (essential for Electron/Mobile)

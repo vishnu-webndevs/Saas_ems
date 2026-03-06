@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import Layout from './components/Layout';
@@ -29,10 +29,11 @@ const getLoginUrl = () => {
 };
 
 function AppContent() {
-  const location = useLocation();
-  const { login, logout, setAuthChecked } = useAuthStore();
+  const { login, logout, setAuthChecked, isAuthenticated, authChecked } = useAuthStore();
 
   useEffect(() => {
+    if (authChecked) return;
+
     if (window.location.protocol !== 'file:') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -61,24 +62,49 @@ function AppContent() {
       return;
     }
 
+    if (isAuthenticated) {
+      setAuthChecked(true);
+      return;
+    }
+
     let cancelled = false;
-    authAPI.getUser()
-      .then((user) => {
-        if (cancelled) return;
-        login(user);
-        setAuthChecked(true);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        logout();
-        setAuthChecked(true);
-        if (!window.location.hash.startsWith('#/login')) {
-          window.location.href = getLoginUrl();
+    const run = async () => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const user = await authAPI.getUser();
+          if (cancelled) return;
+          login(user);
+          setAuthChecked(true);
+          return;
+        } catch (err: unknown) {
+          const status = (err as { response?: { status?: number } })?.response?.status;
+
+          if (status === 401) {
+            if (cancelled) return;
+            logout();
+            setAuthChecked(true);
+            if (!window.location.hash.startsWith('#/login')) {
+              window.location.href = getLoginUrl();
+            }
+            return;
+          }
+
+          if (attempt < 2) {
+            await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+            continue;
+          }
+
+          if (cancelled) return;
+          setAuthChecked(true);
+          return;
         }
-      });
+      }
+    };
+
+    void run();
 
     return () => { cancelled = true; };
-  }, [location.pathname, login, logout, setAuthChecked]);
+  }, [authChecked, isAuthenticated, login, logout, setAuthChecked]);
 
   return (
     <Routes>
