@@ -93,7 +93,7 @@ export default function Timesheets() {
       setEmployeeId(user.id);
       
       // Check if tracker is running and redirect to dashboard
-      const stored = localStorage.getItem('tt-tracker');
+      const stored = localStorage.getItem('ems-tracker');
       if (stored) {
         try {
           const { isTracking } = JSON.parse(stored);

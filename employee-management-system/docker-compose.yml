@@ -9,7 +9,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - tracker_storage:/var/www/html/storage
+      - ems_storage:/var/www/html/storage
 
 volumes:
-  tracker_storage:
+  esm_storage:

@@ -43,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
   useEffect(() => {
     const readTracker = () => {
       try {
-        const raw = localStorage.getItem('tt-tracker');
+        const raw = localStorage.getItem('ems-tracker');
         if (!raw) return { isTracking: false } as { isTracking: boolean; startAt?: string; projectId?: number };
         return JSON.parse(raw) as { isTracking: boolean; startAt?: string; projectId?: number };
       } catch (e) {
@@ -143,7 +143,7 @@ export default function Layout({ children }: LayoutProps) {
   // Global timer ticker
   useEffect(() => {
     const tick = () => {
-      const raw = localStorage.getItem('tt-tracker');
+      const raw = localStorage.getItem('ems-tracker');
       let isTracking = false;
       let startAt: string | null = null;
       if (raw) {
@@ -218,7 +218,7 @@ export default function Layout({ children }: LayoutProps) {
       const { ipcRenderer } = w.require('electron');
       
       const handleAppClose = async () => {
-        const raw = localStorage.getItem('tt-tracker');
+        const raw = localStorage.getItem('ems-tracker');
         if (raw) {
           try {
             const parsed = JSON.parse(raw);
@@ -260,7 +260,7 @@ export default function Layout({ children }: LayoutProps) {
         }
         
         // Remove tracker state
-        localStorage.removeItem('tt-tracker');
+        localStorage.removeItem('ems-tracker');
         
         // Tell main process it's safe to close
         ipcRenderer.send('app-closed-confirmed');

@@ -82,7 +82,7 @@ export default function TimeTracking() {
   const screenshotMissingWarnedRef = useRef<boolean>(false);
   const lastCapturedMinuteRef = useRef<string | null>(localStorage.getItem('tt-last-captured-minute'));
   const isCapturingRef = useRef(false);
-  const trackerKey = 'tt-tracker';
+  const trackerKey = 'ems-tracker';
   const captureScreenshotRef = useRef<() => Promise<void>>(async () => {});
   const mountedRef = useRef<boolean>(true);
   useEffect(() => {
