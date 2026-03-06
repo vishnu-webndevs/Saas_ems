@@ -74,7 +74,7 @@ api.interceptors.request.use((config) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token && window.location.protocol === 'file:') {
+  if (token) {
     if (config.headers instanceof AxiosHeaders) {
       config.headers.set('Authorization', `Bearer ${token}`);
     } else if (config.headers) {
