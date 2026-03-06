@@ -20,8 +20,8 @@ export interface RegisterData {
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<{ user: User }> => {
     const response = await api.post('/login', {
-      ...credentials,
-      email: credentials.email.trim(),
+      email: credentials.email,
+      password: credentials.password,
     });
     const { user, token } = response.data;
     
