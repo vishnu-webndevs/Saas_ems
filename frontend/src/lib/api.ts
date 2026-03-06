@@ -19,8 +19,6 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (!envUrl) return getDefaultApiBaseUrl();
 
-  if (envUrl.startsWith('/')) return envUrl;
-
   try {
     if (window.location.protocol !== 'file:') {
       const parsed = new URL(envUrl);
@@ -76,7 +74,7 @@ api.interceptors.request.use((config) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token) {
+  if (token && window.location.protocol === 'file:') {
     if (config.headers instanceof AxiosHeaders) {
       config.headers.set('Authorization', `Bearer ${token}`);
     } else if (config.headers) {
@@ -94,30 +92,24 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const status = error.response?.status;
-    if (status === 401) {
+    if (error.response?.status === 401) {
       const url: string = error.config?.url ?? '';
       const isUserEndpoint = url.includes('/user');
-      if (isUserEndpoint) {
-        clearAuth();
-        if (!window.location.hash.startsWith('#/login')) {
-          window.location.href = getLoginUrl();
-        }
-      } else {
+      if (!isUserEndpoint) {
         try {
-          const me = await api.get('/user');
-          if (!me?.data?.user) {
-            clearAuth();
-            if (!window.location.hash.startsWith('#/login')) {
-              window.location.href = getLoginUrl();
-            }
-          }
-        } catch {
-          clearAuth();
-          if (!window.location.hash.startsWith('#/login')) {
-            window.location.href = getLoginUrl();
+          await api.get('/user');
+          return Promise.reject(error);
+        } catch (verifyError: unknown) {
+          const verifyStatus = (verifyError as { response?: { status?: number } })?.response?.status;
+          if (verifyStatus !== 401) {
+            return Promise.reject(error);
           }
         }
+      }
+
+      clearAuth();
+      if (!window.location.hash.startsWith('#/login')) {
+        window.location.href = getLoginUrl();
       }
     }
     return Promise.reject(error);

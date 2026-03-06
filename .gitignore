@@ -23,6 +23,7 @@ out/
 # Logs
 logs/
 *.log
+*-logs-*.txt
 
 # System files
 .DS_Store
