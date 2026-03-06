@@ -6,7 +6,7 @@ export interface Plan {
   description: string | null;
   price: number;
   duration_in_days: number;
-  features: any;
+  features: Record<string, unknown> | null;
   max_users: number;
   max_projects: number;
   is_active: boolean;

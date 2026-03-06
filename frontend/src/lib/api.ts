@@ -3,7 +3,7 @@ import axios, { AxiosHeaders } from 'axios';
 const getDefaultApiBaseUrl = () => {
   const { hostname, protocol } = window.location;
   if (protocol === 'file:') {
-    return 'https://tracker.webndevs.com/api';
+    return 'https://ems.webndevs.com/api';
   }
 
   // If running on localhost/127.0.0.1, assume dev mode with port 8000
@@ -19,10 +19,13 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (!envUrl) return getDefaultApiBaseUrl();
 
-  if (envUrl.startsWith('/')) return envUrl;
-
   try {
-    new URL(envUrl);
+    if (window.location.protocol !== 'file:') {
+      const parsed = new URL(envUrl);
+      if (parsed.hostname !== window.location.hostname) {
+        return getDefaultApiBaseUrl();
+      }
+    }
   } catch {
     return getDefaultApiBaseUrl();
   }
@@ -50,7 +53,7 @@ const clearAuth = () => {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  withCredentials: window.location.protocol !== 'file:',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -71,7 +74,7 @@ api.interceptors.request.use((config) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token) {
+  if (token && window.location.protocol === 'file:') {
     if (config.headers instanceof AxiosHeaders) {
       config.headers.set('Authorization', `Bearer ${token}`);
     } else if (config.headers) {
