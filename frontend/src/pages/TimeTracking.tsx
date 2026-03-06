@@ -13,6 +13,15 @@ type SimplePeerInstance = import('simple-peer').Instance;
 type SimplePeerSignalData = import('simple-peer').SignalData;
 type SimplePeerConstructor = typeof import('simple-peer')['default'];
 
+type TTIntervals = {
+  screenshot?: number | null;
+  fixedScreenshot?: number | null;
+  heartbeat?: number | null;
+  visualCheck?: number | null;
+};
+
+type TTWindow = Window & { __tt_intervals?: TTIntervals };
+
 export default function TimeTracking() {
   const { user } = useAuthStore();
   
@@ -865,7 +874,7 @@ export default function TimeTracking() {
         scheduleRandomScreenshots();
     }, msUntilNextBlock);
     
-    const win = window as any;
+    const win = window as unknown as TTWindow;
     if (win.__tt_intervals) win.__tt_intervals.screenshot = screenshotIntervalRef.current;
   };
 
@@ -917,13 +926,13 @@ export default function TimeTracking() {
         },
       });
     }, 60 * 1000);
-    const win = window as any;
+    const win = window as unknown as TTWindow;
     if (win.__tt_intervals) win.__tt_intervals.heartbeat = heartbeatIntervalRef.current;
   };
 
   useEffect(() => {
     // Clear any zombie intervals from previous unmounted instances
-    const win = window as any;
+    const win = window as unknown as TTWindow;
     if (win.__tt_intervals) {
       if (win.__tt_intervals.screenshot) window.clearTimeout(win.__tt_intervals.screenshot); // changed from clearInterval to clearTimeout
       if (win.__tt_intervals.fixedScreenshot) window.clearInterval(win.__tt_intervals.fixedScreenshot);
@@ -1053,12 +1062,12 @@ export default function TimeTracking() {
           if (fixedScreenshotIntervalRef.current) window.clearInterval(fixedScreenshotIntervalRef.current);
 
           // Load persisted schedule
-          const p = parsed as any;
-          if (p.randomShotTimes) {
-             randomShotTimesRef.current = p.randomShotTimes.map((t: string) => new Date(t));
+          const persisted = parsed as unknown as { randomShotTimes?: string[]; fixedShotNextTime?: string };
+          if (persisted.randomShotTimes) {
+             randomShotTimesRef.current = persisted.randomShotTimes.map((t) => new Date(t));
           }
-          if (p.fixedShotNextTime) {
-             fixedShotNextTimeRef.current = new Date(p.fixedShotNextTime);
+          if (persisted.fixedShotNextTime) {
+             fixedShotNextTimeRef.current = new Date(persisted.fixedShotNextTime);
           }
 
           // Check if we need to schedule new shots
@@ -1090,7 +1099,7 @@ export default function TimeTracking() {
              screenshotIntervalRef.current = window.setTimeout(() => {
                 scheduleRandomScreenshots();
              }, msUntilNextBlock);
-             const win = window as any;
+             const win = window as unknown as TTWindow;
              if (win.__tt_intervals) win.__tt_intervals.screenshot = screenshotIntervalRef.current;
           }
 

@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { usersAPI } from '../api/users';
 import { timeTrackingAPI } from '../api/timeTracking';
-import { projectsAPI } from '../api/projects';
-import { tasksAPI } from '../api/tasks';
 import { useAuthStore } from '../stores/authStore';
-import type { TimeLog, User, Screenshot, Project, Task } from '../types';
+import type { TimeLog, User, Screenshot } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'sonner';
+import type { AxiosError } from 'axios';
 
 type SimplePeerInstance = import('simple-peer').Instance;
 type SimplePeerSignalData = import('simple-peer').SignalData;
@@ -79,8 +78,9 @@ export default function Timesheets() {
         description: ''
       });
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || err.message || 'Failed to add time');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? err.message ?? 'Failed to add time');
     }
   });
 
@@ -101,9 +101,7 @@ export default function Timesheets() {
             navigate('/');
             toast.warning('Please stop the tracker to view timesheets.');
           }
-        } catch (e) {
-          // ignore parsing error
-        }
+        } catch { void 0; }
       }
     }
   }, [user, navigate]);
@@ -414,17 +412,6 @@ export default function Timesheets() {
       : Promise.resolve([]),
     enabled: !!employeeId && !!selectedLog,
   });
-
-  const activityRange = useMemo(() => {
-    if (!selectedLog) return null;
-    const start = selectedLog.start_time;
-    // If active (no end_time), show up to NOW (plus buffer)
-    const end = selectedLog.end_time 
-      ? selectedLog.end_time 
-      : new Date().toISOString();
-      
-    return { start, end };
-  }, [selectedLog]);
 
   const fixDate = (dateStr: string) => {
     // Standard parse - the browser will convert UTC (Z) to local time automatically

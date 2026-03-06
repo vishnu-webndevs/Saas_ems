@@ -3,8 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { plansAPI, Plan } from '../../api/plans';
 import { useTheme } from '../../hooks/useTheme';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { Plus, Edit2, Trash2, CheckCircle, XCircle, CreditCard, Users, Folder } from 'lucide-react';
+import { Plus, Edit2, Trash2, CreditCard, Users, Folder } from 'lucide-react';
 import { toast } from 'sonner';
+import type { AxiosError } from 'axios';
 
 export default function Plans() {
   const { theme } = useTheme();
@@ -12,7 +13,18 @@ export default function Plans() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
-  const initialFormState = {
+  interface PlanFormData {
+    name: string;
+    description: string;
+    price: number;
+    duration_in_days: number;
+    max_users: number;
+    max_projects: number;
+    is_active: boolean;
+    features: Record<string, unknown>;
+  }
+
+  const initialFormState: PlanFormData = {
     name: '',
     description: '',
     price: 0,
@@ -33,20 +45,21 @@ export default function Plans() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => plansAPI.createPlan(data),
+    mutationFn: (data: Partial<Plan>) => plansAPI.createPlan(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plans'] });
       setIsModalOpen(false);
       resetForm();
       toast.success('Plan created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create plan');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? 'Failed to create plan');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
+    mutationFn: ({ id, data }: { id: number; data: Partial<Plan> }) => 
       plansAPI.updatePlan(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['plans'] });
@@ -54,8 +67,9 @@ export default function Plans() {
       resetForm();
       toast.success('Plan updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update plan');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? 'Failed to update plan');
     },
   });
 
@@ -65,14 +79,15 @@ export default function Plans() {
       queryClient.invalidateQueries({ queryKey: ['plans'] });
       toast.success('Plan deleted successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete plan');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? 'Failed to delete plan');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const data = {
+    const data: PlanFormData = {
       ...formData,
       // Ensure numeric values
       price: Number(formData.price),

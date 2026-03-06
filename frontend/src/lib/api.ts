@@ -19,13 +19,10 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (!envUrl) return getDefaultApiBaseUrl();
 
+  if (envUrl.startsWith('/')) return envUrl;
+
   try {
-    if (window.location.protocol !== 'file:') {
-      const parsed = new URL(envUrl);
-      if (parsed.hostname !== window.location.hostname) {
-        return getDefaultApiBaseUrl();
-      }
-    }
+    new URL(envUrl);
   } catch {
     return getDefaultApiBaseUrl();
   }
@@ -53,7 +50,7 @@ const clearAuth = () => {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: window.location.protocol !== 'file:',
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

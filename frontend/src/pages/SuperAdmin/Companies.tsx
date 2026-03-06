@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useTheme } from '../../hooks/useTheme';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { Plus, Search, Edit2, Trash2, Shield, Users, Building, Activity, X, Check } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building, X } from 'lucide-react';
 import { toast } from 'sonner';
+import type { AxiosError } from 'axios';
 
 interface Company {
   id: number;
@@ -16,6 +17,23 @@ interface Company {
   created_at: string;
   users_count?: number;
 }
+
+type CreateCompanyPayload = {
+  name: string;
+  email: string;
+  phone: string;
+  plan: string;
+  admin_name: string;
+  admin_email: string;
+  admin_password: string;
+};
+
+type UpdateCompanyPayload = {
+  name: string;
+  email: string;
+  phone: string;
+  plan: string;
+};
 
 export default function Companies() {
   const { theme } = useTheme();
@@ -35,29 +53,30 @@ export default function Companies() {
     admin_password: '',
   });
 
-  const { data: companies, isLoading } = useQuery({
+  const { data: companies, isLoading } = useQuery<Company[]>({
     queryKey: ['companies'],
     queryFn: async () => {
       const response = await api.get('/superadmin/companies');
-      return response.data;
+      return response.data as Company[];
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => api.post('/superadmin/companies', data),
+    mutationFn: (data: CreateCompanyPayload) => api.post('/superadmin/companies', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companies'] });
       setIsModalOpen(false);
       resetForm();
       toast.success('Company created successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create company');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? 'Failed to create company');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
+    mutationFn: ({ id, data }: { id: number; data: UpdateCompanyPayload }) =>
       api.put(`/superadmin/companies/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companies'] });
@@ -65,8 +84,9 @@ export default function Companies() {
       resetForm();
       toast.success('Company updated successfully');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update company');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ message?: string }>;
+      toast.error(err.response?.data?.message ?? 'Failed to update company');
     },
   });
 
@@ -94,7 +114,12 @@ export default function Companies() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingCompany) {
-      const { admin_name, admin_email, admin_password, ...updateData } = formData;
+      const updateData: UpdateCompanyPayload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        plan: formData.plan,
+      };
       updateMutation.mutate({ id: editingCompany.id, data: updateData });
     } else {
       createMutation.mutate(formData);

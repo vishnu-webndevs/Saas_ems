@@ -8,16 +8,19 @@ import { DashboardStats } from '../types';
 
 export default function Dashboard() {
   const { user } = useAuthStore();
+
+  type SuperAdminCompany = { status: 'active' | 'suspended'; users_count?: number };
   
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async (): Promise<DashboardStats> => {
       if (user?.role === 'superadmin') {
          const response = await api.get('/superadmin/companies');
+         const companies = response.data as SuperAdminCompany[];
          return {
-           totalCompanies: response.data.length,
-           activeCompanies: response.data.filter((c: any) => c.status === 'active').length,
-           totalUsers: response.data.reduce((acc: number, c: any) => acc + (c.users_count || 0), 0),
+           totalCompanies: companies.length,
+           activeCompanies: companies.filter((c) => c.status === 'active').length,
+           totalUsers: companies.reduce((acc, c) => acc + (c.users_count || 0), 0),
            // Add other superadmin stats here if needed
          } as DashboardStats;
       }
