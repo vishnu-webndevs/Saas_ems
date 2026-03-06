@@ -19,6 +19,8 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (!envUrl) return getDefaultApiBaseUrl();
 
+  if (envUrl.startsWith('/')) return envUrl;
+
   try {
     if (window.location.protocol !== 'file:') {
       const parsed = new URL(envUrl);
@@ -74,7 +76,7 @@ api.interceptors.request.use((config) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token && window.location.protocol === 'file:') {
+  if (token) {
     if (config.headers instanceof AxiosHeaders) {
       config.headers.set('Authorization', `Bearer ${token}`);
     } else if (config.headers) {
