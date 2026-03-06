@@ -55,7 +55,7 @@ const clearAuth = () => {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  withCredentials: window.location.protocol !== 'file:',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -93,11 +93,31 @@ api.interceptors.request.use((config) => {
 // Response interceptor to handle auth errors
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      clearAuth();
-      if (!window.location.hash.startsWith('#/login')) {
-        window.location.href = getLoginUrl();
+  async (error) => {
+    const status = error.response?.status;
+    if (status === 401) {
+      const url: string = error.config?.url ?? '';
+      const isUserEndpoint = url.includes('/user');
+      if (isUserEndpoint) {
+        clearAuth();
+        if (!window.location.hash.startsWith('#/login')) {
+          window.location.href = getLoginUrl();
+        }
+      } else {
+        try {
+          const me = await api.get('/user');
+          if (!me?.data?.user) {
+            clearAuth();
+            if (!window.location.hash.startsWith('#/login')) {
+              window.location.href = getLoginUrl();
+            }
+          }
+        } catch {
+          clearAuth();
+          if (!window.location.hash.startsWith('#/login')) {
+            window.location.href = getLoginUrl();
+          }
+        }
       }
     }
     return Promise.reject(error);
