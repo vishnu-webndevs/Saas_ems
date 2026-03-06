@@ -55,7 +55,7 @@ const clearAuth = () => {
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: window.location.protocol !== 'file:',
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
