@@ -40,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/password', [AuthController::class, 'updatePassword']);
     Route::get('/user/live-status', [UserController::class, 'checkLiveStatus']);
 
     // Dashboard

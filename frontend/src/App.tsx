@@ -14,6 +14,7 @@ import TimeTracking from './pages/TimeTracking';
 import Timesheets from './pages/Timesheets';
 import Companies from './pages/SuperAdmin/Companies';
 import Plans from './pages/SuperAdmin/Plans';
+import Settings from './pages/Settings';
 import { authAPI } from './api/auth';
 import { useAuthStore } from './stores/authStore';
 
@@ -91,6 +92,7 @@ function AppContent() {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/time-tracking" element={<TimeTracking />} />
                 <Route path="/timesheets" element={<Timesheets />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/" element={<Dashboard />} />
               </Routes>
             </Layout>
