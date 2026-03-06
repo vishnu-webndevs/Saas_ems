@@ -64,8 +64,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.tracker.webndevs",
-    "productName": "Tracker Webndevs",
+    "appId": "com.ems.webndevs",
+    "productName": "Employee Management System",
     "files": [
       "dist/**/*",
       "electron/**/*"

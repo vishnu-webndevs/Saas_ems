@@ -39,7 +39,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'Tracker Webndevs', // Set custom title
+    title: 'Employee Management System', // Set custom title
     autoHideMenuBar: true, // Hide the menu bar
     webPreferences: {
       nodeIntegration: true,
