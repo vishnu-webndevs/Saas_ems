@@ -32,23 +32,26 @@ function AppContent() {
   const { login, logout, setAuthChecked } = useAuthStore();
 
   useEffect(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('auth-storage');
-
     const now = Date.now();
     const lastUsedRaw = localStorage.getItem(AUTH_LAST_USED_KEY);
     const lastUsed = lastUsedRaw ? Number(lastUsedRaw) : NaN;
 
     if (Number.isFinite(lastUsed) && now - lastUsed > AUTH_TTL_MS) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('auth-storage');
       logout();
       setAuthChecked(true);
       window.location.href = getLoginUrl();
       return;
     }
 
-    if (!lastUsedRaw) {
-      localStorage.setItem(AUTH_LAST_USED_KEY, String(now));
+    if (!lastUsedRaw) localStorage.setItem(AUTH_LAST_USED_KEY, String(now));
+
+    // Skip user fetch if we are already on login page
+    if (window.location.hash.startsWith('#/login')) {
+      setAuthChecked(true);
+      return;
     }
 
     let cancelled = false;

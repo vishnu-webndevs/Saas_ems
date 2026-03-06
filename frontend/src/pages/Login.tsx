@@ -38,8 +38,14 @@ export default function Login() {
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error: unknown) {
-      const err = error as AxiosError<{ message?: string }>;
-      const message = err.response?.data?.message ?? 'Login failed';
+      type LaravelError = { message?: string; errors?: Record<string, string[]> };
+      const err = error as AxiosError<LaravelError>;
+      const resp = err.response?.data;
+      const message =
+        (resp?.errors && (resp.errors.email?.[0] || resp.errors.password?.[0])) ||
+        resp?.message ||
+        err.message ||
+        'Login failed';
       toast.error(message);
     } finally {
       setIsLoading(false);
