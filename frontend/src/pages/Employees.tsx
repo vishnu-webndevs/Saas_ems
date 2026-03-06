@@ -36,7 +36,7 @@ export default function Employees() {
   const createSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email'),
-    role: z.enum(['admin', 'employee']),
+    role: z.enum(['superadmin', 'admin', 'employee']),
     password: z.string().min(8, 'Minimum 8 characters'),
     password_confirmation: z.string().min(8, 'Minimum 8 characters'),
     phone: z.string().optional(),
@@ -52,7 +52,7 @@ export default function Employees() {
   const editSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     email: z.string().email('Invalid email'),
-    role: z.enum(['admin', 'employee']),
+    role: z.enum(['superadmin', 'admin', 'employee']),
     password: z.string().optional(),
     password_confirmation: z.string().optional(),
     phone: z.string().optional(),
