@@ -30,7 +30,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware([\App\Http\Middleware\AttachSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function () {
     // Super Admin Routes
     Route::prefix('superadmin')->group(function () {
         Route::apiResource('companies', CompanyController::class);

@@ -49,8 +49,7 @@ class UserController extends Controller
     {
         $this->authorize('create', User::class);
 
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         // Check plan limits for company users
         if ($currentUser && !$currentUser->isSuperAdmin() && $currentUser->company) {
@@ -150,7 +149,8 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
-        if ($user->id === auth()->id()) {
+        $request = request();
+        if ($user->id === $request->user()->id) {
             return response()->json(['message' => 'You cannot delete your own account'], 403);
         }
 
@@ -213,8 +213,7 @@ class UserController extends Controller
 
     public function storeTimeLog(Request $request, User $user)
     {
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         // Only admin can add manual time
         if ($currentUser->role !== 'admin') {
@@ -255,10 +254,9 @@ class UserController extends Controller
         ], 201);
     }
 
-    public function getAssignedProjects(User $user)
+    public function getAssignedProjects(Request $request, User $user)
     {
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($currentUser->role !== 'admin' && $currentUser->id !== $user->id) {
              return response()->json(['message' => 'Unauthorized'], 403);
@@ -270,10 +268,9 @@ class UserController extends Controller
         return response()->json($projects);
     }
 
-    public function getAssignedProjectTasks(User $user, Project $project)
+    public function getAssignedProjectTasks(Request $request, User $user, Project $project)
     {
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($currentUser->role !== 'admin' && $currentUser->id !== $user->id) {
              return response()->json(['message' => 'Unauthorized'], 403);
@@ -359,8 +356,7 @@ class UserController extends Controller
     {
         $this->authorize('update', $user); // Or 'delete' if specific policy exists, but 'update' for self/admin is fine
 
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($screenshot->user_id !== $user->id && $currentUser->role !== 'admin') {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -571,9 +567,7 @@ class UserController extends Controller
     public function checkLiveStatus(Request $request)
     {
         // User checks if they should be streaming
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
-        $userId = $currentUser->id;
+        $userId = $request->user()->id;
 
         $isLive = Cache::get('live_view_' . $userId, false);
         
@@ -605,9 +599,7 @@ class UserController extends Controller
             'candidate' => 'nullable', 
         ]);
 
-        // Determine direction
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
         $isTargetUser = $currentUser->id === $user->id;
 
         $fromAdmin = !$isTargetUser;
@@ -631,8 +623,7 @@ class UserController extends Controller
     {
         $type = $request->query('type');
         
-        /** @var \App\Models\User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
         $isTargetUser = $currentUser->id === $user->id;
 
         // If I am user, I want signals FROM admin (from_admin=true).
