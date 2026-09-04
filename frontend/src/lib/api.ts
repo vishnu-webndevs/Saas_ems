@@ -18,18 +18,6 @@ const getDefaultApiBaseUrl = () => {
 const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL as string | undefined;
   if (!envUrl) return getDefaultApiBaseUrl();
-
-  try {
-    if (window.location.protocol !== 'file:') {
-      const parsed = new URL(envUrl);
-      if (parsed.hostname !== window.location.hostname) {
-        return getDefaultApiBaseUrl();
-      }
-    }
-  } catch {
-    return getDefaultApiBaseUrl();
-  }
-
   return envUrl;
 };
 
@@ -60,7 +48,7 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor for auth TTL tracking + Desktop token injection
+// Request interceptor for auth TTL tracking + token injection
 api.interceptors.request.use((config) => {
   const now = Date.now();
   const lastUsedRaw = localStorage.getItem(AUTH_LAST_USED_KEY);
@@ -74,7 +62,7 @@ api.interceptors.request.use((config) => {
   }
 
   const token = localStorage.getItem('token');
-  if (token && window.location.protocol === 'file:') {
+  if (token) {
     if (config.headers instanceof AxiosHeaders) {
       config.headers.set('Authorization', `Bearer ${token}`);
     } else if (config.headers) {

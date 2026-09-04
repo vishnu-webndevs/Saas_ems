@@ -54,6 +54,8 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        $isSecure = $request->secure();
+
         return response()
             ->json([
             'user' => $user,
@@ -66,10 +68,10 @@ class AuthController extends Controller
                 60 * 24 * 7,
                 '/',
                 null,
-                !app()->environment('local'),
+                $isSecure,
                 true,
                 false,
-                'Strict'
+                'Lax'
             );
     }
 
@@ -179,6 +181,8 @@ class AuthController extends Controller
 
         Auth::login($user);
 
+        $isSecure = $request->secure();
+
         return response()
             ->json([
             'user' => $user,
@@ -191,10 +195,10 @@ class AuthController extends Controller
                 60 * 24 * 7,
                 '/',
                 null,
-                !app()->environment('local'),
+                $isSecure,
                 true,
                 false,
-                'Strict'
+                'Lax'
             );
     }
 }
