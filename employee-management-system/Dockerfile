@@ -24,8 +24,6 @@ RUN mkdir -p storage/logs bootstrap/cache storage/app/public \
     && php artisan storage:link || true \
     && chown -h www-data:www-data public/storage
 
-USER www-data
-
 RUN php artisan package:discover --ansi
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
