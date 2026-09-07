@@ -8,6 +8,10 @@ ENV NGINX_CLIENT_MAX_BODY_SIZE=50M
 
 COPY . /var/www/html
 
+# Provision mounted volume storage directories and permissions on container boot
+COPY docker/init-storage.sh /etc/entrypoint.d/99-init-storage.sh
+RUN chmod +x /etc/entrypoint.d/99-init-storage.sh
+
 RUN mkdir -p storage/logs bootstrap/cache storage/app/public \
     storage/framework/cache/data storage/framework/sessions storage/framework/views \
     && chown -R www-data:www-data storage bootstrap/cache storage/app/public public \
